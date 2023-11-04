@@ -9,6 +9,10 @@ let PLAY = 'mpv --no-video --force-window=no --input-ipc-server=/tmp/mpvsocket -
 let KILL = 'killall mpv && killall ytdl'
 let BASE_URL = "https://www.youtube.com/oembed";
 
+// can be found with `sudo amixer controls`
+const PCM_VOLUME_ID = 4;
+const INITIAL_VOLUME = 80;
+
 module.exports = class AudioStream {
   constructor() {
     this.queue = [];
@@ -16,6 +20,7 @@ module.exports = class AudioStream {
     this.paused = false;
     this.ytdl = null;
     this.mpv = null;
+    this.setVolume(INITIAL_VOLUME);
   }
 
   async updateSign(url) {
@@ -138,6 +143,17 @@ module.exports = class AudioStream {
   getQueue() {
     return this.queue;
   }
+
+  getVolume() {
+    return this.volume;
+  }
+
+  /**
+    * Sets the volume of the Raspberry pi via amixer.
+   * @param volume - The volume to set the stream to. Must be between 0 and 100. 
+   */
+  setVolume(volume) {
+    this.volume = volume;
+    exec(`sudo amixer cset numid=${PCM_VOLUME_ID} ${volume}%`)
+  }
 }
-
-
